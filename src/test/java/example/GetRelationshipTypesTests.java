@@ -2,15 +2,10 @@ package example;
 
 import org.junit.jupiter.api.*;
 import org.neo4j.driver.*;
-import org.neo4j.driver.exceptions.ClientException;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GetRelationshipTypesTests {
