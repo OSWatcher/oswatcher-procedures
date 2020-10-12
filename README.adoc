@@ -1,5 +1,5 @@
 = Neo4j Procedure Template
-:branch: 3.5
+:branch: 4.1
 :root: https://github.com/neo4j-examples/neo4j-procedure-template/blob/{branch}/src
 
 This project is an example you can use to build user defined procedures, functions and aggregation functions in Neo4j.
@@ -13,19 +13,14 @@ This project requires a Neo4j {branch}.x dependency.
 
 === User Defined Procedure
 
-The user defined procedure allows you to index and search a explicit Lucene index within Neo4j.
+The user defined procedure allows you to get the incoming and outgoing relationships for a given node.
 
-Given properties of a node can be added to indexes named according to the labels of the node.
-After that the data can be searched with Lucene Syntax.
-
-See link:{root}/main/java/example/FullTextIndex.java[`FullTextIndex.java`] and the link:{root}/test/java/example/LegacyFullTextIndexTest.java[`LegacyFullTextIndexTest.java`].
+See link:{root}/main/java/example/GetRelationshipTypes.java[`GetRelationshipTypes.java`] and the link:{root}/test/java/example/GetRelationshipTypesTests.java[`GetRelationshipTypesTests.java`].
 
 [source,cypher]
 ----
 MATCH (n:Person)
-CALL example.index(id(n), ['name']);
-
-CALL example.search('Person','name:Jo*') YIELD nodeId
+CALL example.getRelationshipTypes(n);
 ----
 
 === User Defined Function
