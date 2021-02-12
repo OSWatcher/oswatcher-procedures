@@ -2,10 +2,14 @@ package example;
 
 import org.junit.jupiter.api.*;
 import org.neo4j.driver.*;
+import org.neo4j.driver.Record;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +23,8 @@ class TraverseDemoTest {
     private Neo4j embeddedDatabaseServer;
 
     @BeforeAll
-    void initializeNeo4j() {
+    void initializeNeo4j() throws IOException {
+
         var sw = new StringWriter();
         try (var in = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/movie.cypher")))) {
             in.transferTo(sw);
@@ -57,7 +62,5 @@ class TraverseDemoTest {
             assertThat(coActorNames.size()).isEqualTo(names.size());
             assertThat(coActorNames).containsAll(names);
         }
-
     }
-
 }
