@@ -1,9 +1,9 @@
 package example;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.traversal.Evaluation;
 import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
@@ -23,7 +23,7 @@ public class TraverseDemo {
     static final Label PERSON = Label.label("Person");
 
     @Context
-    public GraphDatabaseService db;
+    public Transaction tx;
 
     @Context
     public Log log;
@@ -38,13 +38,12 @@ public class TraverseDemo {
     @Description("traverses starting from the Person with the given name and returns all co-actors")
     public Stream<NodeWrapper> findCoActors(@Name("actorName") String actorName) {
 
-
-        Node actor = db.beginTx().findNodes(PERSON, "name", actorName)
+        Node actor = tx.findNodes(PERSON, "name", actorName)
                 .stream()
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
 
-        final Traverser traverse = db.beginTx().traversalDescription()
+        final Traverser traverse = tx.traversalDescription()
                 .depthFirst()
                 .evaluator(Evaluators.fromDepth(1))
                 .evaluator(Evaluators.toDepth(2))

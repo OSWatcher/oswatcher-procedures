@@ -42,7 +42,8 @@ class TraverseDemoTest {
 
         try(
                 Driver driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI(), driverConfig);
-                Session session = driver.session()) {
+                Session session = driver.session()
+        ) {
 
             var names = session.run("match (keanu:Person {name:'Keanu Reeves'})-[*1..2]-(coactors:Person)\n" +
                     "with coactors.name as names order by names\n" +
