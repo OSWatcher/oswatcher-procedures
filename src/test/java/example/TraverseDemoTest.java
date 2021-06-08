@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TraverseDemoTest {
 
@@ -41,8 +40,8 @@ class TraverseDemoTest {
     void findKeanuReevesCoActors() {
 
         try(
-                Driver driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI(), driverConfig);
-                Session session = driver.session()
+                var driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI(), driverConfig);
+                var session = driver.session()
         ) {
 
             var names = session.run("match (keanu:Person {name:'Keanu Reeves'})-[*1..2]-(coactors:Person)\n" +
@@ -52,15 +51,15 @@ class TraverseDemoTest {
                     .map(Value::asString)
                     .collect(Collectors.toList());
 
-            List<Record> records = session.run("call travers.findCoActors('Keanu Reeves')").list();
+            var records = session.run("call travers.findCoActors('Keanu Reeves')").list();
 
-            List<String> coActorNames = records.stream()
+            var coActorNames = records.stream()
                     .map(r -> r.get("node"))
                     .map(node -> node.get("name"))
                     .map(Value::asString)
                     .sorted()
                     .collect(Collectors.toList());
-            assertThat(coActorNames.size()).isEqualTo(names.size());
+            assertThat(coActorNames).hasSize(names.size());
             assertThat(coActorNames).containsAll(names);
         }
     }

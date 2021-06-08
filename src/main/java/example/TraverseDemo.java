@@ -1,5 +1,8 @@
 package example;
 
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Path;
@@ -9,10 +12,11 @@ import org.neo4j.graphdb.traversal.Evaluator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.Traverser;
 import org.neo4j.logging.Log;
-import org.neo4j.procedure.*;
-
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import org.neo4j.procedure.Context;
+import org.neo4j.procedure.Description;
+import org.neo4j.procedure.Mode;
+import org.neo4j.procedure.Name;
+import org.neo4j.procedure.Procedure;
 
 /**
  * Simple demo on how to use the TraversalAPI.
@@ -36,7 +40,7 @@ public class TraverseDemo {
      */
     @Procedure(value = "travers.findCoActors", mode = Mode.READ)
     @Description("traverses starting from the Person with the given name and returns all co-actors")
-    public Stream<NodeWrapper> findCoActors(@Name("actorName") String actorName) {
+    public Stream<CoActorRecord> findCoActors(@Name("actorName") String actorName) {
 
         Node actor = tx.findNodes(PERSON, "name", actorName)
                 .stream()
@@ -53,15 +57,23 @@ public class TraverseDemo {
         return StreamSupport
                 .stream(traverse.spliterator(), false)
                 .map(Path::endNode)
-                .map(NodeWrapper::new);
+                .map(CoActorRecord::new);
     }
 
-
-    public static class NodeWrapper {
+    /**
+     * See <a href="https://neo4j.com/docs/java-reference/4.2/javadocs/org/neo4j/procedure/Procedure.html">Procedure</a>
+     * <blockquote>
+     * A procedure must always return a Stream of Records, or nothing. The record is defined per procedure, as a class
+     * with only public, non-final fields. The types, order and names of the fields in this class define the format of the
+     * returned records.
+     * </blockquote>
+     * This is a record that wraps one of the valid return types (in this case a {@link Node}.
+     */
+    public static final class CoActorRecord {
 
         public final Node node;
 
-        public NodeWrapper(Node node) {
+        CoActorRecord(Node node) {
             this.node = node;
         }
     }
@@ -69,7 +81,7 @@ public class TraverseDemo {
     /**
      * Miss-using an evaluator to log out the path being evaluated.
      */
-    private class PathLogger implements Evaluator {
+    private final class PathLogger implements Evaluator {
 
         @Override
         public Evaluation evaluate(Path path) {
@@ -78,7 +90,7 @@ public class TraverseDemo {
         }
     }
 
-    private static class LabelEvaluator implements Evaluator {
+    private static final class LabelEvaluator implements Evaluator {
 
         private final Label label;
 
