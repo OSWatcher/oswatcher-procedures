@@ -9,8 +9,6 @@ import org.neo4j.graphdb.*;
 import org.neo4j.logging.Log;
 import org.neo4j.procedure.*;
 
-import static org.neo4j.internal.helpers.collection.MapUtil.stringMap;
-
 /**
  * This is an example showing how you could expose Neo4j's full text indexes as
  * two procedures - one for updating indexes, and one for querying by label and
