@@ -1,8 +1,12 @@
 package example;
 
-import org.junit.jupiter.api.*;
-import org.neo4j.driver.*;
-import org.neo4j.driver.Record;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.neo4j.driver.Config;
+import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.Value;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 
@@ -10,7 +14,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TraverseDemoTest {
 
-    private static final Config driverConfig = Config.builder().withoutEncryption().build();
     private Neo4j embeddedDatabaseServer;
 
     @BeforeAll
@@ -36,11 +38,16 @@ class TraverseDemoTest {
             .build();
     }
 
+    @AfterAll
+    void closeNeo4j() {
+        this.embeddedDatabaseServer.close();
+    }
+
     @Test
     void findKeanuReevesCoActors() {
 
         try(
-                var driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI(), driverConfig);
+                var driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI());
                 var session = driver.session()
         ) {
 
