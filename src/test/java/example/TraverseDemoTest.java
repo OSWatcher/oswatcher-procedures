@@ -4,7 +4,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.neo4j.driver.Config;
 import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Value;
 import org.neo4j.harness.Neo4j;
@@ -14,7 +13,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,7 +54,7 @@ class TraverseDemoTest {
                     "return distinct names").stream()
                     .map(r -> r.get("names"))
                     .map(Value::asString)
-                    .collect(Collectors.toList());
+                    .toList();
 
             var records = session.run("call travers.findCoActors('Keanu Reeves')").list();
 
@@ -65,7 +63,7 @@ class TraverseDemoTest {
                     .map(node -> node.get("name"))
                     .map(Value::asString)
                     .sorted()
-                    .collect(Collectors.toList());
+                    .toList();
             assertThat(coActorNames).hasSize(names.size());
             assertThat(coActorNames).containsAll(names);
         }

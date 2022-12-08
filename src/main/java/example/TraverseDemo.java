@@ -90,13 +90,7 @@ public class TraverseDemo {
         }
     }
 
-    private static final class LabelEvaluator implements Evaluator {
-
-        private final Label label;
-
-        private LabelEvaluator(Label label) {
-            this.label = label;
-        }
+    private record LabelEvaluator(Label label) implements Evaluator {
 
         @Override
         public Evaluation evaluate(Path path) {
