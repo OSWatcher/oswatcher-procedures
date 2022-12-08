@@ -49,13 +49,18 @@ class TraverseDemoTest {
                 var session = driver.session()
         ) {
 
-            var names = session.run("match (keanu:Person {name:'Keanu Reeves'})-[*1..2]-(coactors:Person)\n" +
-                    "with coactors.name as names order by names\n" +
-                    "return distinct names").stream()
+            // language=cypher
+            var names = session.run("""
+                    match (keanu:Person {name:'Keanu Reeves'})-[*1..2]-(coactors:Person)
+                    with coactors.name as names order by names
+                    return distinct names
+                    """)
+                .stream()
                     .map(r -> r.get("names"))
                     .map(Value::asString)
                     .toList();
 
+            // language=cypher
             var records = session.run("call travers.findCoActors('Keanu Reeves')").list();
 
             var coActorNames = records.stream()
