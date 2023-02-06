@@ -1,5 +1,5 @@
 = Neo4j Procedure Template
-:branch: 4.1
+:branch: 5.2
 :root: https://github.com/neo4j-examples/neo4j-procedure-template/blob/{branch}/src
 
 This project is an example you can use to build user defined procedures, functions and aggregation functions in Neo4j.
@@ -11,7 +11,7 @@ To try this out, simply clone this repository and have a look at the source and 
 This project requires a Neo4j {branch}.x dependency.
 
 
-=== User Defined Procedure
+== User Defined Procedure
 
 The user defined procedure allows you to get the incoming and outgoing relationships for a given node.
 
@@ -20,10 +20,12 @@ See link:{root}/main/java/example/GetRelationshipTypes.java[`GetRelationshipType
 [source,cypher]
 ----
 MATCH (n:Person)
-CALL example.getRelationshipTypes(n);
+CALL example.getRelationshipTypes(n)
+YIELD outgoing, incoming
+RETURN outgoing, incoming;
 ----
 
-=== User Defined Function
+== User Defined Function
 
 The user defined function is a simple join function that joins a list of strings using a delimiter.
 
@@ -34,7 +36,7 @@ See link:{root}/main/java/example/Join.java[`Join.java`] and the link:{root}/tes
 RETURN example.join(['A','quick','brown','fox'],' ') as sentence
 ----
 
-=== User Defined Aggregation Function
+== User Defined Aggregation Function
 
 The aggregation function `example.last` returns the last row of an aggregation.
 
@@ -42,7 +44,8 @@ The aggregation function `example.last` returns the last row of an aggregation.
 ----
 MATCH (n:Person)
 WITH n ORDER BY n.born
-RETURN n.born, example.last(n) as last
+WITH example.last(n) as last
+RETURN last
 ----
 
 See link:{root}/main/java/example/Last.java[`Last.java`] and the link:{root}/test/java/example/LastTest.java[`LastTest.java`].

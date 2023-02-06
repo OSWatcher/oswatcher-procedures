@@ -38,7 +38,7 @@ public class TraverseDemo {
      * @param actorName name of the Person node to start from
      * @return Stream of Person Nodes
      */
-    @Procedure(value = "travers.findCoActors", mode = Mode.READ)
+    @Procedure(name = "travers.findCoActors", mode = Mode.READ)
     @Description("traverses starting from the Person with the given name and returns all co-actors")
     public Stream<CoActorRecord> findCoActors(@Name("actorName") String actorName) {
 
