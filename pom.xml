@@ -25,6 +25,7 @@
     <assertj.version>3.24.2</assertj.version>
     <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
     <maven.version>3.9.4</maven.version>
+    <maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
   </properties>
 
   <dependencies>
@@ -84,7 +85,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.4.1</version>
+        <version>${maven-enforcer-plugin.version}</version>
         <executions>
           <execution>
             <id>enforce</id>
