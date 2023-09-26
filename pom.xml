@@ -48,6 +48,12 @@
       <artifactId>neo4j-harness</artifactId>
       <version>${neo4j.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-nop</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
