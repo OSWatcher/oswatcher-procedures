@@ -68,15 +68,11 @@ public class TreeDiffRecursiveProcedure {
                 return;
             }
 
-            log.info("Processing directory: " + path + " (Depth: " + depth + ")");
-
             // Find the nodes in the database
             Node base = baseHash != null ? tx.findNode(Label.label("Tree"), "hash", baseHash) : null;
             Node diffee = diffeeHash != null ? tx.findNode(Label.label("Tree"), "hash", diffeeHash) : null;
 
-            // If both nodes are null, there's nothing to compare
             if (base == null && diffee == null) {
-                log.warn("Both base and diffee nodes are null for path: " + path);
                 return;
             }
 
@@ -84,56 +80,39 @@ public class TreeDiffRecursiveProcedure {
             Map<String, NodeInfo> baseEntries = base != null ? collectNodeInfo(base) : new HashMap<>();
             Map<String, NodeInfo> diffeeEntries = diffee != null ? collectNodeInfo(diffee) : new HashMap<>();
 
-            // Combine all keys to process both added and removed entries
             Set<String> allKeys = new HashSet<>(baseEntries.keySet());
             allKeys.addAll(diffeeEntries.keySet());
 
-            // Use a synchronized list to safely add subtasks from parallel streams
-            List<RecursiveAction> subTasks = Collections.synchronizedList(new ArrayList<>());
+            List<DiffTask> subTasks = new ArrayList<>();
 
-            // Counters for logging
-            AtomicInteger newCount = new AtomicInteger(0);
-            AtomicInteger delCount = new AtomicInteger(0);
-            AtomicInteger modCount = new AtomicInteger(0);
-
-            // Process all entries in the current directory in parallel
-            allKeys.parallelStream().forEach(name -> {
+            for (String name : allKeys) {
                 NodeInfo baseInfo = baseEntries.get(name);
                 NodeInfo diffeeInfo = diffeeEntries.get(name);
                 String currentPath = path.isEmpty() ? name : path + "/" + name;
 
                 if (baseInfo == null && diffeeInfo != null) {
-                    // New node added
+                    // New node
                     results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
-                    newCount.incrementAndGet();
                     if (isRecursableLabel(diffeeInfo.type)) {
                         subTasks.add(new DiffTask(null, diffeeInfo.hash, currentPath, depth + 1, maxDepth, results));
                     }
                 } else if (baseInfo != null && diffeeInfo == null) {
-                    // Node deleted
+                    // Deleted node
                     results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
-                    delCount.incrementAndGet();
                     if (isRecursableLabel(baseInfo.type)) {
                         subTasks.add(new DiffTask(baseInfo.hash, null, currentPath, depth + 1, maxDepth, results));
                     }
                 } else if (baseInfo != null && diffeeInfo != null && !baseInfo.hash.equals(diffeeInfo.hash)) {
-                    // Node modified
+                    // Modified node
                     results.add(new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties, diffeeInfo.properties));
-                    modCount.incrementAndGet();
                     if (isRecursableLabel(baseInfo.type)) {
                         subTasks.add(new DiffTask(baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth, results));
                     }
                 }
-            });
+            }
 
-            log.info("Directory " + path + " diff summary: NEW=" + newCount.get() + 
-                     ", DEL=" + delCount.get() + ", MOD=" + modCount.get() + 
-                     ", Subdirectories to process: " + subTasks.size());
-
-            // Process all subtasks (recursive calls) in parallel
+            // Process subtasks in parallel
             invokeAll(subTasks);
-
-            log.info("Completed processing directory: " + path);
         }
     }
 
@@ -155,12 +134,22 @@ public class TreeDiffRecursiveProcedure {
         Map<String, NodeInfo> info = new HashMap<>();
         for (Relationship r : root.getRelationships(Direction.OUTGOING)) {
             Node child = r.getEndNode();
-            String name = (String) r.getProperty("name");
-            info.put(name, new NodeInfo(
-                child.getLabels().iterator().next().name(),
-                (String) child.getProperty("hash"),
-                propertiesToMap(child)
-            ));
+            try {
+                String name = (String) r.getProperty("name");
+                info.put(name, new NodeInfo(
+                    child.getLabels().iterator().next().name(),
+                    (String) child.getProperty("hash"),
+                    propertiesToMap(child)
+                ));
+            } catch (NotFoundException e) {
+                log.error("Property 'name' not found on relationship. Details: " +
+                        "Root node ID: " + root.getId() +
+                        ", Child node ID: " + child.getId() +
+                        ", Relationship type: " + r.getType().name() +
+                        ", Root node labels: " + root.getLabels() +
+                        ", Child node labels: " + child.getLabels());
+                throw e; // Re-throw the exception after logging
+            }
         }
         return info;
     }
