@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public class TreeDiffRecursiveProcedure {
 
     @Context
-    public GraphDatabaseService db;
+    public Transaction tx;
 
     @Context
     public Log log;
@@ -20,24 +20,21 @@ public class TreeDiffRecursiveProcedure {
             @Name("base") String baseHash,
             @Name("diffee") String diffeeHash,
             @Name("base_path") String basePath,
-            @Name(value = "max_depth", defaultValue = "-1") long maxDepth) {
+            @Name(value = "max_depth", defaultValue = "-1") long maxDepth
+            )
+            {
 
         log.info("Starting diff between base hash: " + baseHash + " and diffee hash: " + diffeeHash);
 
         List<DiffResult> results = new ArrayList<>();
-        try (Transaction tx = db.beginTx()) {
-            diffRecursive(baseHash, diffeeHash, basePath, 0, maxDepth, results, tx);
-            tx.commit();
-        } catch (Exception e) {
-            log.error("Error during diff process", e);
-        }
+        diffRecursive(baseHash, diffeeHash, basePath, 0, maxDepth, results);
 
         log.info("Diff process completed. Total results: " + results.size());
 
         return results.stream();
     }
 
-    private void diffRecursive(String baseHash, String diffeeHash, String path, int depth, long maxDepth, List<DiffResult> results, Transaction tx) {
+    private void diffRecursive(String baseHash, String diffeeHash, String path, int depth, long maxDepth, List<DiffResult> results) {
         if (maxDepth != -1 && depth > maxDepth) {
             return;
         }
@@ -66,17 +63,17 @@ public class TreeDiffRecursiveProcedure {
             if (baseInfo == null && diffeeInfo != null) {
                 results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
                 if (isRecursableLabel(diffeeInfo.type)) {
-                    diffRecursive(null, diffeeInfo.hash, currentPath, depth + 1, maxDepth, results, tx);
+                    diffRecursive(null, diffeeInfo.hash, currentPath, depth + 1, maxDepth, results);
                 }
             } else if (baseInfo != null && diffeeInfo == null) {
                 results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
                 if (isRecursableLabel(baseInfo.type)) {
-                    diffRecursive(baseInfo.hash, null, currentPath, depth + 1, maxDepth, results, tx);
+                    diffRecursive(baseInfo.hash, null, currentPath, depth + 1, maxDepth, results);
                 }
             } else if (baseInfo != null && diffeeInfo != null && !baseInfo.hash.equals(diffeeInfo.hash)) {
                 results.add(new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties, diffeeInfo.properties));
                 if (isRecursableLabel(baseInfo.type)) {
-                    diffRecursive(baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth, results, tx);
+                    diffRecursive(baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth, results);
                 }
             }
         }
