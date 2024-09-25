@@ -44,8 +44,6 @@ public class TreeDiffRecursiveProcedure {
             return;
         }
 
-        log.info("Processing path: " + path + ", depth: " + depth);
-
         Node base = baseHash != null ? tx.findNode(Label.label(parentLabel), "hash", baseHash) : null;
         Node diffee = diffeeHash != null ? tx.findNode(Label.label(parentLabel), "hash", diffeeHash) : null;
 
