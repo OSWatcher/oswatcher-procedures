@@ -91,10 +91,10 @@ public class TreeDiffRecursiveProcedure {
         for (Relationship r : root.getRelationships(Direction.OUTGOING)) {
             Node child = r.getEndNode();
             try {
-                String name = (String) r.getProperty("name");
                 String childLabel = child.getLabels().iterator().next().name();
 
                 if (filter.isEmpty() || filter.contains(childLabel)) {
+                    String name = (String) r.getProperty("name");
                     info.put(name, new NodeInfo(
                         childLabel,
                         (String) child.getProperty("hash"),
