@@ -23,8 +23,7 @@ public class TreeDiffRecursiveProcedure {
             @Name("diffee") String diffeeHash,
             @Name("base_path") String basePath,
             @Name("filter") List<String> filter,
-            @Name(value = "max_depth", defaultValue = "-1") long maxDepth)
-    {
+            @Name(value = "max_depth", defaultValue = "-1") long maxDepth) {
 
         List<String> effectiveFilter = (filter != null) ? filter : Collections.emptyList();
         log.info("Starting diff between base hash: " + baseHash + " and diffee hash: " + diffeeHash);
@@ -39,8 +38,9 @@ public class TreeDiffRecursiveProcedure {
         return results.stream();
     }
 
-    private void diffRecursive(String parentLabel, String baseHash, String diffeeHash, String path, int depth, long maxDepth, List<String> filter, List<DiffResult> results) {
-        if (maxDepth != -1 && depth > maxDepth) {
+    private void diffRecursive(String parentLabel, String baseHash, String diffeeHash, String path, int depth,
+            long maxDepth, List<String> filter, List<DiffResult> results) {
+        if (!canRecurse(depth, maxDepth)) {
             return;
         }
 
@@ -66,7 +66,8 @@ public class TreeDiffRecursiveProcedure {
             if (baseInfo == null && diffeeInfo != null) {
                 results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
                 if (isRecursableLabel(diffeeInfo.type)) {
-                    diffRecursive(parentLabel, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth, filter, results);
+                    diffRecursive(parentLabel, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth, filter,
+                            results);
                 }
             } else if (baseInfo != null && diffeeInfo == null) {
                 results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
@@ -74,12 +75,18 @@ public class TreeDiffRecursiveProcedure {
                     diffRecursive(parentLabel, baseInfo.hash, null, currentPath, depth + 1, maxDepth, filter, results);
                 }
             } else if (baseInfo != null && diffeeInfo != null && !baseInfo.hash.equals(diffeeInfo.hash)) {
-                results.add(new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties, diffeeInfo.properties));
+                results.add(
+                        new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties, diffeeInfo.properties));
                 if (isRecursableLabel(baseInfo.type)) {
-                    diffRecursive(parentLabel, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth, filter, results);
+                    diffRecursive(parentLabel, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth, filter,
+                            results);
                 }
             }
         }
+    }
+
+    private boolean canRecurse(int currentDepth, long maxDepth) {
+        return maxDepth == -1 || currentDepth <= maxDepth;
     }
 
     private boolean isRecursableLabel(String type) {
@@ -96,16 +103,15 @@ public class TreeDiffRecursiveProcedure {
                 if (filter.isEmpty() || filter.contains(childLabel)) {
                     String name = (String) r.getProperty("name");
                     info.put(name, new NodeInfo(
-                        childLabel,
-                        (String) child.getProperty("hash"),
-                        propertiesToMap(child)
-                    ));
+                            childLabel,
+                            (String) child.getProperty("hash"),
+                            propertiesToMap(child)));
                 }
             } catch (Exception e) {
                 log.error("Error collecting node info: " + e.getMessage() +
-                          ", Root node: " + root +
-                          ", Relationship type: " + r.getType().name() +
-                          ", Child node: " + child);
+                        ", Root node: " + root +
+                        ", Relationship type: " + r.getType().name() +
+                        ", Child node: " + child);
             }
         }
         return info;
@@ -138,8 +144,8 @@ public class TreeDiffRecursiveProcedure {
         public Map<String, Object> old_props;
         public Map<String, Object> new_props;
 
-        public DiffResult(String status, String type, String path, 
-                          Map<String, Object> old_props, Map<String, Object> new_props) {
+        public DiffResult(String status, String type, String path,
+                Map<String, Object> old_props, Map<String, Object> new_props) {
             this.status = status;
             this.type = type;
             this.path = path;
