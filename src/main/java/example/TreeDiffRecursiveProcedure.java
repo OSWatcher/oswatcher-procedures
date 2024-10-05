@@ -67,7 +67,7 @@ public class TreeDiffRecursiveProcedure {
                     if (withIntermediates) {
                         results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
                     }
-                    diffRecursive(parentLabel, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
+                    diffRecursive(diffeeInfo.type, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
                             withIntermediates, filter,
                             results);
                 } else {
@@ -78,7 +78,8 @@ public class TreeDiffRecursiveProcedure {
                     if (withIntermediates) {
                         results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
                     }
-                    diffRecursive(parentLabel, baseInfo.hash, null, currentPath, depth + 1, maxDepth, withIntermediates,
+                    diffRecursive(baseInfo.type, baseInfo.hash, null, currentPath, depth + 1, maxDepth,
+                            withIntermediates,
                             filter, results);
                 } else {
                     results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
@@ -89,7 +90,7 @@ public class TreeDiffRecursiveProcedure {
                         results.add(new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties,
                                 diffeeInfo.properties));
                     }
-                    diffRecursive(parentLabel, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
+                    diffRecursive(baseInfo.type, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
                             withIntermediates, filter,
                             results);
                 } else {
