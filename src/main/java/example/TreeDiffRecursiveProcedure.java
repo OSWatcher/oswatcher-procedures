@@ -23,7 +23,8 @@ public class TreeDiffRecursiveProcedure {
             @Name("diffee") String diffeeHash,
             @Name("base_path") String basePath,
             @Name("filter") List<String> filter,
-            @Name(value = "max_depth", defaultValue = "-1") long maxDepth) {
+            @Name(value = "max_depth", defaultValue = "-1") long maxDepth,
+            @Name(value = "with_intermediates", defaultValue = "false") boolean withIntermediates) {
 
         List<String> effectiveFilter = (filter != null) ? filter : Collections.emptyList();
         log.info("Starting diff between base hash: " + baseHash + " and diffee hash: " + diffeeHash);
@@ -31,7 +32,8 @@ public class TreeDiffRecursiveProcedure {
         effectiveFilter.add(parentLabel);
 
         List<DiffResult> results = new ArrayList<>();
-        diffRecursive(parentLabel, baseHash, diffeeHash, basePath, 0, maxDepth, effectiveFilter, results);
+        diffRecursive(parentLabel, baseHash, diffeeHash, basePath, 0, maxDepth, withIntermediates, effectiveFilter,
+                results);
 
         log.info("Diff process completed. Total results: " + results.size());
 
@@ -39,7 +41,7 @@ public class TreeDiffRecursiveProcedure {
     }
 
     private void diffRecursive(String parentLabel, String baseHash, String diffeeHash, String path, int depth,
-            long maxDepth, List<String> filter, List<DiffResult> results) {
+            long maxDepth, boolean withIntermediates, List<String> filter, List<DiffResult> results) {
 
         Node base = baseHash != null ? tx.findNode(Label.label(parentLabel), "hash", baseHash) : null;
         Node diffee = diffeeHash != null ? tx.findNode(Label.label(parentLabel), "hash", diffeeHash) : null;
@@ -62,20 +64,34 @@ public class TreeDiffRecursiveProcedure {
 
             if (baseInfo == null && diffeeInfo != null) {
                 if (canRecurse(depth, maxDepth) && isRecursableLabel(diffeeInfo.type)) {
-                    diffRecursive(parentLabel, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth, filter,
+                    if (withIntermediates) {
+                        results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
+                    }
+                    diffRecursive(diffeeInfo.type, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
+                            withIntermediates, filter,
                             results);
                 } else {
                     results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
                 }
             } else if (baseInfo != null && diffeeInfo == null) {
                 if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.type)) {
-                    diffRecursive(parentLabel, baseInfo.hash, null, currentPath, depth + 1, maxDepth, filter, results);
+                    if (withIntermediates) {
+                        results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
+                    }
+                    diffRecursive(baseInfo.type, baseInfo.hash, null, currentPath, depth + 1, maxDepth,
+                            withIntermediates,
+                            filter, results);
                 } else {
                     results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
                 }
             } else if (baseInfo != null && diffeeInfo != null && !baseInfo.hash.equals(diffeeInfo.hash)) {
                 if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.type)) {
-                    diffRecursive(parentLabel, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth, filter,
+                    if (withIntermediates) {
+                        results.add(new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties,
+                                diffeeInfo.properties));
+                    }
+                    diffRecursive(baseInfo.type, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
+                            withIntermediates, filter,
                             results);
                 } else {
                     results.add(
@@ -91,7 +107,8 @@ public class TreeDiffRecursiveProcedure {
     }
 
     private boolean isRecursableLabel(String type) {
-        return "Tree".equals(type) || "WinRegKey".equals(type);
+        return "Tree".equals(type) || "WinRegKey".equals(type) || "WinStruct".equals(type)
+                || "WinStructField".equals(type);
     }
 
     private Map<String, NodeInfo> collectNodeInfo(Node root, List<String> filter) {
