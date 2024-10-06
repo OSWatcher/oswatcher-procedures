@@ -63,39 +63,39 @@ public class TreeDiffRecursiveProcedure {
             String currentPath = Paths.get(path, name).toString();
 
             if (baseInfo == null && diffeeInfo != null) {
-                if (canRecurse(depth, maxDepth) && isRecursableLabel(diffeeInfo.type)) {
+                if (canRecurse(depth, maxDepth) && isRecursableLabel(diffeeInfo.label)) {
                     if (withIntermediates) {
-                        results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
+                        results.add(new DiffResult("NEW", diffeeInfo.label, currentPath, null, diffeeInfo.properties));
                     }
-                    diffRecursive(diffeeInfo.type, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
+                    diffRecursive(diffeeInfo.label, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
                             withIntermediates, filter,
                             results);
                 } else {
-                    results.add(new DiffResult("NEW", diffeeInfo.type, currentPath, null, diffeeInfo.properties));
+                    results.add(new DiffResult("NEW", diffeeInfo.label, currentPath, null, diffeeInfo.properties));
                 }
             } else if (baseInfo != null && diffeeInfo == null) {
-                if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.type)) {
+                if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.label)) {
                     if (withIntermediates) {
-                        results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
+                        results.add(new DiffResult("DEL", baseInfo.label, currentPath, baseInfo.properties, null));
                     }
-                    diffRecursive(baseInfo.type, baseInfo.hash, null, currentPath, depth + 1, maxDepth,
+                    diffRecursive(baseInfo.label, baseInfo.hash, null, currentPath, depth + 1, maxDepth,
                             withIntermediates,
                             filter, results);
                 } else {
-                    results.add(new DiffResult("DEL", baseInfo.type, currentPath, baseInfo.properties, null));
+                    results.add(new DiffResult("DEL", baseInfo.label, currentPath, baseInfo.properties, null));
                 }
             } else if (baseInfo != null && diffeeInfo != null && !baseInfo.hash.equals(diffeeInfo.hash)) {
-                if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.type)) {
+                if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.label)) {
                     if (withIntermediates) {
-                        results.add(new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties,
+                        results.add(new DiffResult("MOD", baseInfo.label, currentPath, baseInfo.properties,
                                 diffeeInfo.properties));
                     }
-                    diffRecursive(baseInfo.type, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
+                    diffRecursive(baseInfo.label, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
                             withIntermediates, filter,
                             results);
                 } else {
                     results.add(
-                            new DiffResult("MOD", baseInfo.type, currentPath, baseInfo.properties,
+                            new DiffResult("MOD", baseInfo.label, currentPath, baseInfo.properties,
                                     diffeeInfo.properties));
                 }
             }
@@ -144,12 +144,12 @@ public class TreeDiffRecursiveProcedure {
     }
 
     private static class NodeInfo {
-        String type;
+        String label;
         String hash;
         Map<String, Object> properties;
 
         NodeInfo(String type, String hash, Map<String, Object> properties) {
-            this.type = type;
+            this.label = type;
             this.hash = hash;
             this.properties = properties;
         }
