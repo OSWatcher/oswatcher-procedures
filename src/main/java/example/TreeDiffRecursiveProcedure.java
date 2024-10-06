@@ -123,7 +123,7 @@ public class TreeDiffRecursiveProcedure {
                     info.put(name, new NodeInfo(
                             childLabel,
                             (String) child.getProperty("hash"),
-                            propertiesToMap(child)));
+                            child.getAllProperties()));
                 }
             } catch (Exception e) {
                 log.error("Error collecting node info: " + e.getMessage() +
@@ -133,14 +133,6 @@ public class TreeDiffRecursiveProcedure {
             }
         }
         return info;
-    }
-
-    private Map<String, Object> propertiesToMap(Node node) {
-        Map<String, Object> props = new HashMap<>();
-        for (String key : node.getPropertyKeys()) {
-            props.put(key, node.getProperty(key));
-        }
-        return props;
     }
 
     private static class NodeInfo {
