@@ -54,7 +54,8 @@ public class TreeDiffRecursiveProcedure {
         Map<String, NodeInfo> baseEntries = base != null ? collectNodeInfo(base, filter) : new HashMap<>();
         Map<String, NodeInfo> diffeeEntries = diffee != null ? collectNodeInfo(diffee, filter) : new HashMap<>();
 
-        Set<String> allKeys = new HashSet<>(baseEntries.keySet());
+        // Create a TreeSet to store all keys in sorted order
+        Set<String> allKeys = new TreeSet<>(baseEntries.keySet());
         allKeys.addAll(diffeeEntries.keySet());
 
         for (String name : allKeys) {
