@@ -17,7 +17,7 @@
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <neo4j.version>5.24.2</neo4j.version>
+    <neo4j.version>5.26.14</neo4j.version>
     <neo4j-java-driver.version>5.26.0</neo4j-java-driver.version>
     <junit-jupiter.version>5.11.2</junit-jupiter.version>
     <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
