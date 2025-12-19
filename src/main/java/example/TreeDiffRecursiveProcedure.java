@@ -108,8 +108,8 @@ public class TreeDiffRecursiveProcedure {
     }
 
     private boolean isRecursableLabel(String type) {
-        return "Tree".equals(type) || "WinRegKey".equals(type) || "WinStruct".equals(type)
-                || "WinStructField".equals(type);
+        return "Tree".equals(type) || "WinRegKey".equals(type) || "Struct".equals(type)
+                || "StructField".equals(type);
     }
 
     private Map<String, NodeInfo> collectNodeInfo(Node root, List<String> filter) {
