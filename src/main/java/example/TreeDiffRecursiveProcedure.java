@@ -8,13 +8,13 @@ import java.util.stream.Stream;
 import java.nio.file.Paths;
 
 enum DiffStatus {
-    NEW, MOD, DEL;
+    NEW, MOD, DEL, UNCHANGED;
 
     public static DiffStatus fromString(String status) {
         try {
             return DiffStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status: " + status + ". Must be one of: NEW, MOD, DEL");
+            throw new IllegalArgumentException("Invalid status: " + status + ". Must be one of: NEW, MOD, DEL, UNCHANGED");
         }
     }
 }
@@ -122,6 +122,13 @@ public class TreeDiffRecursiveProcedure {
                             new DiffResult("MOD", baseInfo.label, currentPath, baseInfo.properties,
                                     diffeeInfo.properties));
                 }
+            } else if (baseInfo != null && diffeeInfo != null && baseInfo.hash.equals(diffeeInfo.hash)) {
+                // UNCHANGED case - node exists in both with identical hash
+                if (shouldIncludeStatus(DiffStatus.UNCHANGED, statusFilter)) {
+                    results.add(new DiffResult("UNCHANGED", baseInfo.label, currentPath,
+                            baseInfo.properties, diffeeInfo.properties));
+                }
+                // No recursion needed - children are guaranteed identical by hash
             }
         }
     }
@@ -136,6 +143,10 @@ public class TreeDiffRecursiveProcedure {
     }
 
     private boolean shouldIncludeStatus(DiffStatus status, Set<DiffStatus> statusFilter) {
+        if (status == DiffStatus.UNCHANGED) {
+            // UNCHANGED requires explicit opt-in (not included in empty filter)
+            return statusFilter.contains(status);
+        }
         return statusFilter.isEmpty() || statusFilter.contains(status);
     }
 
