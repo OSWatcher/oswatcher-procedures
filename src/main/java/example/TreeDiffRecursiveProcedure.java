@@ -7,6 +7,18 @@ import java.util.*;
 import java.util.stream.Stream;
 import java.nio.file.Paths;
 
+enum DiffStatus {
+    NEW, MOD, DEL;
+
+    public static DiffStatus fromString(String status) {
+        try {
+            return DiffStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + status + ". Must be one of: NEW, MOD, DEL");
+        }
+    }
+}
+
 public class TreeDiffRecursiveProcedure {
 
     @Context
@@ -24,16 +36,26 @@ public class TreeDiffRecursiveProcedure {
             @Name("base_path") String basePath,
             @Name("filter") List<String> filter,
             @Name(value = "max_depth", defaultValue = "-1") long maxDepth,
-            @Name(value = "with_intermediates", defaultValue = "false") boolean withIntermediates) {
+            @Name(value = "with_intermediates", defaultValue = "false") boolean withIntermediates,
+            @Name(value = "status_filter", defaultValue = "[]") List<String> statusFilter) {
 
         List<String> effectiveFilter = (filter != null) ? filter : Collections.emptyList();
+
+        // Validate and convert status_filter to Set<DiffStatus>
+        Set<DiffStatus> effectiveStatusFilter = new HashSet<>();
+        if (statusFilter != null && !statusFilter.isEmpty()) {
+            for (String s : statusFilter) {
+                effectiveStatusFilter.add(DiffStatus.fromString(s));  // Throws if invalid
+            }
+        }
+
         log.info("Starting diff between base hash: " + baseHash + " and diffee hash: " + diffeeHash);
         // filter should contain the parent label
         effectiveFilter.add(parentLabel);
 
         List<DiffResult> results = new ArrayList<>();
         diffRecursive(parentLabel, baseHash, diffeeHash, basePath, 0, maxDepth, withIntermediates, effectiveFilter,
-                results);
+                effectiveStatusFilter, results);
 
         log.info("Diff process completed. Total results: " + results.size());
 
@@ -41,7 +63,8 @@ public class TreeDiffRecursiveProcedure {
     }
 
     private void diffRecursive(String parentLabel, String baseHash, String diffeeHash, String path, int depth,
-            long maxDepth, boolean withIntermediates, List<String> filter, List<DiffResult> results) {
+            long maxDepth, boolean withIntermediates, List<String> filter, Set<DiffStatus> statusFilter,
+            List<DiffResult> results) {
 
         Node base = baseHash != null ? tx.findNode(Label.label(parentLabel), "hash", baseHash) : null;
         Node diffee = diffeeHash != null ? tx.findNode(Label.label(parentLabel), "hash", diffeeHash) : null;
@@ -65,36 +88,36 @@ public class TreeDiffRecursiveProcedure {
 
             if (baseInfo == null && diffeeInfo != null) {
                 if (canRecurse(depth, maxDepth) && isRecursableLabel(diffeeInfo.label)) {
-                    if (withIntermediates) {
+                    if (withIntermediates && shouldIncludeStatus(DiffStatus.NEW, statusFilter)) {
                         results.add(new DiffResult("NEW", diffeeInfo.label, currentPath, null, diffeeInfo.properties));
                     }
                     diffRecursive(diffeeInfo.label, null, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
-                            withIntermediates, filter,
+                            withIntermediates, filter, statusFilter,
                             results);
-                } else {
+                } else if (shouldIncludeStatus(DiffStatus.NEW, statusFilter)) {
                     results.add(new DiffResult("NEW", diffeeInfo.label, currentPath, null, diffeeInfo.properties));
                 }
             } else if (baseInfo != null && diffeeInfo == null) {
                 if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.label)) {
-                    if (withIntermediates) {
+                    if (withIntermediates && shouldIncludeStatus(DiffStatus.DEL, statusFilter)) {
                         results.add(new DiffResult("DEL", baseInfo.label, currentPath, baseInfo.properties, null));
                     }
                     diffRecursive(baseInfo.label, baseInfo.hash, null, currentPath, depth + 1, maxDepth,
                             withIntermediates,
-                            filter, results);
-                } else {
+                            filter, statusFilter, results);
+                } else if (shouldIncludeStatus(DiffStatus.DEL, statusFilter)) {
                     results.add(new DiffResult("DEL", baseInfo.label, currentPath, baseInfo.properties, null));
                 }
             } else if (baseInfo != null && diffeeInfo != null && !baseInfo.hash.equals(diffeeInfo.hash)) {
                 if (canRecurse(depth, maxDepth) && isRecursableLabel(baseInfo.label)) {
-                    if (withIntermediates) {
+                    if (withIntermediates && shouldIncludeStatus(DiffStatus.MOD, statusFilter)) {
                         results.add(new DiffResult("MOD", baseInfo.label, currentPath, baseInfo.properties,
                                 diffeeInfo.properties));
                     }
                     diffRecursive(baseInfo.label, baseInfo.hash, diffeeInfo.hash, currentPath, depth + 1, maxDepth,
-                            withIntermediates, filter,
+                            withIntermediates, filter, statusFilter,
                             results);
-                } else {
+                } else if (shouldIncludeStatus(DiffStatus.MOD, statusFilter)) {
                     results.add(
                             new DiffResult("MOD", baseInfo.label, currentPath, baseInfo.properties,
                                     diffeeInfo.properties));
@@ -110,6 +133,10 @@ public class TreeDiffRecursiveProcedure {
     private boolean isRecursableLabel(String type) {
         return "Tree".equals(type) || "WinRegKey".equals(type) || "Struct".equals(type)
                 || "StructField".equals(type);
+    }
+
+    private boolean shouldIncludeStatus(DiffStatus status, Set<DiffStatus> statusFilter) {
+        return statusFilter.isEmpty() || statusFilter.contains(status);
     }
 
     private Map<String, NodeInfo> collectNodeInfo(Node root, List<String> filter) {
