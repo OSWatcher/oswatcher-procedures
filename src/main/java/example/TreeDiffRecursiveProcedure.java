@@ -14,7 +14,8 @@ enum DiffStatus {
         try {
             return DiffStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid status: " + status + ". Must be one of: NEW, MOD, DEL, UNCHANGED");
+            throw new IllegalArgumentException(
+                    "Invalid status: " + status + ". Must be one of: NEW, MOD, DEL, UNCHANGED");
         }
     }
 }
@@ -45,11 +46,17 @@ public class TreeDiffRecursiveProcedure {
         Set<DiffStatus> effectiveStatusFilter = new HashSet<>();
         if (statusFilter != null && !statusFilter.isEmpty()) {
             for (String s : statusFilter) {
-                effectiveStatusFilter.add(DiffStatus.fromString(s));  // Throws if invalid
+                effectiveStatusFilter.add(DiffStatus.fromString(s)); // Throws if invalid
             }
         }
 
         log.info("Starting diff between base hash: " + baseHash + " and diffee hash: " + diffeeHash);
+
+        // max_depth=0 means compare nodes themselves (no children)
+        if (maxDepth == 0) {
+            return diffLeafNodes(parentLabel, baseHash, diffeeHash, basePath, effectiveStatusFilter).stream();
+        }
+
         // filter should contain the parent label
         effectiveFilter.add(parentLabel);
 
@@ -134,12 +141,50 @@ public class TreeDiffRecursiveProcedure {
     }
 
     private boolean canRecurse(int currentDepth, long maxDepth) {
-        return maxDepth == -1 || currentDepth < maxDepth;
+        // maxDepth semantics (shifted by 1):
+        // 0 = compare nodes themselves (handled at entry, never reaches here)
+        // 1 = immediate children only (no recursion)
+        // 2 = children + grandchildren
+        // -1 = unlimited
+        return maxDepth == -1 || currentDepth < maxDepth - 1;
     }
 
     private boolean isRecursableLabel(String type) {
         return "Tree".equals(type) || "WinRegKey".equals(type) || "Struct".equals(type)
                 || "StructField".equals(type);
+    }
+
+    private List<DiffResult> diffLeafNodes(String parentLabel, String baseHash, String diffeeHash,
+            String path, Set<DiffStatus> statusFilter) {
+        List<DiffResult> results = new ArrayList<>();
+
+        Node base = baseHash != null ? tx.findNode(Label.label(parentLabel), "hash", baseHash) : null;
+        Node diffee = diffeeHash != null ? tx.findNode(Label.label(parentLabel), "hash", diffeeHash) : null;
+
+        if (base == null && diffee == null) {
+            log.warn("Both base and diffee leaf nodes are null for path: " + path);
+            return results;
+        }
+
+        Map<String, Object> baseProps = base != null ? base.getAllProperties() : null;
+        Map<String, Object> diffeeProps = diffee != null ? diffee.getAllProperties() : null;
+
+        DiffStatus status;
+        if (base == null && diffee != null) {
+            status = DiffStatus.NEW;
+        } else if (base != null && diffee == null) {
+            status = DiffStatus.DEL;
+        } else if (!baseHash.equals(diffeeHash)) {
+            status = DiffStatus.MOD;
+        } else {
+            status = DiffStatus.UNCHANGED;
+        }
+
+        if (shouldIncludeStatus(status, statusFilter)) {
+            results.add(new DiffResult(status.name(), parentLabel, path, baseProps, diffeeProps));
+        }
+
+        return results;
     }
 
     private boolean shouldIncludeStatus(DiffStatus status, Set<DiffStatus> statusFilter) {
