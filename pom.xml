@@ -3,13 +3,26 @@
                       http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.neo4j.example</groupId>
-  <artifactId>procedure-template</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <groupId>io.oswatcher</groupId>
+  <artifactId>oswatcher-procedures</artifactId>
+  <version>1.0.0</version>
 
   <packaging>jar</packaging>
-  <name>Neo4j Procedure Template</name>
-  <description>A template project for building a Neo4j Procedure</description>
+  <name>OSWatcher Procedures</name>
+  <description>Custom Neo4j stored procedures for OSWatcher — recursive tree diffing over the merkle graph</description>
+  <url>https://github.com/OSWatcher/oswatcher-procedures</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/OSWatcher/oswatcher-procedures</url>
+    <connection>scm:git:git://github.com/OSWatcher/oswatcher-procedures.git</connection>
+  </scm>
 
   <properties>
     <java.version>17</java.version>

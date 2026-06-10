@@ -1,4 +1,4 @@
-# GraphEOS Procedures
+# OSWatcher Procedures
 
 Neo4j stored procedures for tree diffing operations.
 
