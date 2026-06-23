@@ -1,7 +1,7 @@
 // Copyright 2021-2026 Mathieu Tarral
 // SPDX-License-Identifier: Apache-2.0
 
-package example;
+package io.oswatcher;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -13,18 +13,20 @@ import org.neo4j.driver.Session;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class JoinTest {
+public class LastTest {
 
     private Neo4j embeddedDatabaseServer;
 
     @BeforeAll
     void initializeNeo4j() {
-        this.embeddedDatabaseServer = Neo4jBuilders.newInProcessBuilder()
+        this.embeddedDatabaseServer = Neo4jBuilders
+                .newInProcessBuilder()
                 .withDisabledServer()
-                .withFunction(Join.class)
+                .withAggregationFunction(Last.class)
                 .build();
     }
 
@@ -34,16 +36,17 @@ public class JoinTest {
     }
 
     @Test
-    void joinsStrings() {
+    public void shouldAllowReturningTheLastValue() {
+
         // This is in a try-block, to make sure we close the driver after the test
         try(Driver driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI());
             Session session = driver.session()) {
 
             // When
-            String result = session.run( "RETURN example.join(['Hello', 'World']) AS result").single().get("result").asString();
+            Long result = session.run( "UNWIND range(1,10) as value RETURN oswatcher.last(value) AS last").single().get("last").asLong();
 
             // Then
-            assertThat( result).isEqualTo(( "Hello,World" ));
+            assertThat(result).isEqualTo( 10L );
         }
     }
 }

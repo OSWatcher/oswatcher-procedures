@@ -1,7 +1,7 @@
 // Copyright 2021-2026 Mathieu Tarral
 // SPDX-License-Identifier: Apache-2.0
 
-package example;
+package io.oswatcher;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.procedure.*;
@@ -19,7 +19,7 @@ public class TreeDiffProcedure {
     @Context
     public Log log;
 
-    @Procedure(value = "example.treeDiff")
+    @Procedure(value = "oswatcher.treeDiff")
     @Description("A simple procedure that takes two parameters and returns a hello world message")
     public Stream<DiffResult> treeDiff(
             @Name("base") String baseHash,
@@ -106,7 +106,7 @@ public class TreeDiffProcedure {
         public Map<String, Object> old_props;
         public Map<String, Object> new_props;
 
-        public DiffResult(String status, String type, String path, 
+        public DiffResult(String status, String type, String path,
                           Map<String, Object> old_props, Map<String, Object> new_props) {
             this.status = status;
             this.type = type;

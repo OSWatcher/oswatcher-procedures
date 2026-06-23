@@ -1,7 +1,7 @@
 // Copyright 2021-2026 Mathieu Tarral
 // SPDX-License-Identifier: Apache-2.0
 
-package example;
+package io.oswatcher;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,7 +41,7 @@ public class EntityResultExampleTest {
 			var driver = GraphDatabase.driver(embeddedDatabaseServer.boltURI());
 			var session = driver.session()
 		) {
-			var indizes = session.run("CALL example.allnodes YIELD node")
+			var indizes = session.run("CALL oswatcher.allnodes YIELD node")
 				.stream().map(r -> r.get("node").get("idx").asInt());
 
 			assertThat(indizes).hasSize(5)

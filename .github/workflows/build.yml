@@ -107,4 +107,4 @@ jobs:
         with:
           files: '*.jar'
           name: ${{ env.VERSION }}
-          draft: true
+          draft: false

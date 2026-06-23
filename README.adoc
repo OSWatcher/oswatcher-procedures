@@ -7,13 +7,13 @@ These procedures are deployed as a JAR plugin into Neo4j and power the diff engi
 
 == Procedures
 
-=== `example.diffTreesRecursive`
+=== `oswatcher.diffTreesRecursive`
 
 Recursively diffs two nodes in the OSWatcher merkle graph, yielding per-node change records.
 
 [source,cypher]
 ----
-CALL example.diffTreesRecursive(
+CALL oswatcher.diffTreesRecursive(
     parent_label,       // String:       node label to traverse (e.g. 'Tree', 'Blob')
     base,               // String|null:  hash of the base node
     diffee,             // String|null:  hash of the diffee node
@@ -57,19 +57,19 @@ Empty list returns all statuses except `UNCHANGED`.
 [source,cypher]
 ----
 // Diff symbols between two Blobs (immediate children only)
-CALL example.diffTreesRecursive('Blob', 'hash1', 'hash2', '/', ['Symbol'], 1, false, [])
+CALL oswatcher.diffTreesRecursive('Blob', 'hash1', 'hash2', '/', ['Symbol'], 1, false, [])
 YIELD status, path, old_props, new_props
 
 // Full recursive filesystem tree diff
-CALL example.diffTreesRecursive('Tree', 'hash1', 'hash2', '/', [], -1, false, [])
+CALL oswatcher.diffTreesRecursive('Tree', 'hash1', 'hash2', '/', [], -1, false, [])
 YIELD status, path
 
 // Compare two nodes directly (git-log style, no recursion)
-CALL example.diffTreesRecursive('Tree', 'hash1', 'hash2', '/', [], 0, false, [])
+CALL oswatcher.diffTreesRecursive('Tree', 'hash1', 'hash2', '/', [], 0, false, [])
 YIELD status, path
 
 // Only show modified and new nodes
-CALL example.diffTreesRecursive('Tree', 'hash1', 'hash2', '/', [], -1, false, ['MOD', 'NEW'])
+CALL oswatcher.diffTreesRecursive('Tree', 'hash1', 'hash2', '/', [], -1, false, ['MOD', 'NEW'])
 YIELD status, path
 ----
 

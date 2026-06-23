@@ -1,7 +1,7 @@
 // Copyright 2021-2026 Mathieu Tarral
 // SPDX-License-Identifier: Apache-2.0
 
-package example;
+package io.oswatcher;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
