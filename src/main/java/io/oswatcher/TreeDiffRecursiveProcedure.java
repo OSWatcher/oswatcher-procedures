@@ -1,4 +1,7 @@
-package example;
+// Copyright 2021-2026 Mathieu Tarral
+// SPDX-License-Identifier: Apache-2.0
+
+package io.oswatcher;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.procedure.*;
@@ -28,7 +31,7 @@ public class TreeDiffRecursiveProcedure {
     @Context
     public Log log;
 
-    @Procedure(value = "example.diffTreesRecursive", mode = Mode.READ)
+    @Procedure(value = "oswatcher.diffTreesRecursive", mode = Mode.READ)
     @Description("Recursively diff two trees with optional max depth")
     public Stream<DiffResult> diffTreesRecursive(
             @Name("parent_label") String parentLabel,

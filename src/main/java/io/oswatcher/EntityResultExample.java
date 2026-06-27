@@ -1,4 +1,7 @@
-package example;
+// Copyright 2021-2026 Mathieu Tarral
+// SPDX-License-Identifier: Apache-2.0
+
+package io.oswatcher;
 
 import java.util.stream.Stream;
 
@@ -23,7 +26,7 @@ public class EntityResultExample {
 	public record EntityContainer(Node node) {
 	}
 
-	@Procedure(name = "example.allnodes", mode = Mode.READ)
+	@Procedure(name = "oswatcher.allnodes", mode = Mode.READ)
 	public Stream<EntityContainer> allnodes() {
 		ResourceIterator<Node> nodes = tx.execute("MATCH (n) RETURN n").columnAs("n");
 		return nodes.stream().map(EntityContainer::new);

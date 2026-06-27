@@ -1,4 +1,7 @@
-package example;
+// Copyright 2021-2026 Mathieu Tarral
+// SPDX-License-Identifier: Apache-2.0
+
+package io.oswatcher;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,7 +46,7 @@ class TreeDiffRecursiveProcedureTest {
             // max_depth=0 means compare nodes themselves (no children)
             var records = session
                     .run("""
-                            CALL example.diffTreesRecursive('Blob', 'abc123', 'abc123', '/test/path', [], 0, false, ['UNCHANGED'])
+                            CALL oswatcher.diffTreesRecursive('Blob', 'abc123', 'abc123', '/test/path', [], 0, false, ['UNCHANGED'])
                             YIELD status, type, path, old_props, new_props
                             RETURN status, type, path, old_props, new_props
                             """)
@@ -70,7 +73,7 @@ class TreeDiffRecursiveProcedureTest {
 
             // max_depth=0 means compare nodes themselves (no children)
             var records = session.run("""
-                    CALL example.diffTreesRecursive('Blob', 'hash1', 'hash2', '/modified/blob', [], 0, false, [])
+                    CALL oswatcher.diffTreesRecursive('Blob', 'hash1', 'hash2', '/modified/blob', [], 0, false, [])
                     YIELD status, type, path, old_props, new_props
                     RETURN status, type, path, old_props, new_props
                     """).list();
@@ -95,7 +98,7 @@ class TreeDiffRecursiveProcedureTest {
 
             // max_depth=0 means compare nodes themselves (no children)
             var records = session.run("""
-                    CALL example.diffTreesRecursive('Blob', 'deleted_hash', null, '/deleted/blob', [], 0, false, [])
+                    CALL oswatcher.diffTreesRecursive('Blob', 'deleted_hash', null, '/deleted/blob', [], 0, false, [])
                     YIELD status, type, path, old_props, new_props
                     RETURN status, type, path, old_props, new_props
                     """).list();
@@ -120,7 +123,7 @@ class TreeDiffRecursiveProcedureTest {
 
             // max_depth=0 means compare nodes themselves (no children)
             var records = session.run("""
-                    CALL example.diffTreesRecursive('Blob', null, 'new_hash', '/new/blob', [], 0, false, [])
+                    CALL oswatcher.diffTreesRecursive('Blob', null, 'new_hash', '/new/blob', [], 0, false, [])
                     YIELD status, type, path, old_props, new_props
                     RETURN status, type, path, old_props, new_props
                     """).list();
@@ -148,7 +151,7 @@ class TreeDiffRecursiveProcedureTest {
             // Filter for only NEW status - should return empty since it's a MOD
             var records = session
                     .run("""
-                            CALL example.diffTreesRecursive('Blob', 'filter_hash1', 'filter_hash2', '/filtered', [], 0, false, ['NEW'])
+                            CALL oswatcher.diffTreesRecursive('Blob', 'filter_hash1', 'filter_hash2', '/filtered', [], 0, false, ['NEW'])
                             YIELD status, type, path, old_props, new_props
                             RETURN status, type, path, old_props, new_props
                             """)
@@ -170,7 +173,7 @@ class TreeDiffRecursiveProcedureTest {
             // Empty status filter should NOT include UNCHANGED
             var records = session
                     .run("""
-                            CALL example.diffTreesRecursive('Blob', 'unchanged_default', 'unchanged_default', '/unchanged', [], 0, false, [])
+                            CALL oswatcher.diffTreesRecursive('Blob', 'unchanged_default', 'unchanged_default', '/unchanged', [], 0, false, [])
                             YIELD status, type, path, old_props, new_props
                             RETURN status, type, path, old_props, new_props
                             """)
@@ -187,7 +190,7 @@ class TreeDiffRecursiveProcedureTest {
                 var session = driver.session()) {
             // max_depth=0 means compare nodes themselves (no children)
             var records = session.run("""
-                    CALL example.diffTreesRecursive('Blob', null, null, '/empty', [], 0, false, [])
+                    CALL oswatcher.diffTreesRecursive('Blob', null, null, '/empty', [], 0, false, [])
                     YIELD status, type, path, old_props, new_props
                     RETURN status, type, path, old_props, new_props
                     """).list();

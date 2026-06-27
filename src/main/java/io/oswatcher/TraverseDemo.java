@@ -1,4 +1,7 @@
-package example;
+// Copyright 2021-2026 Mathieu Tarral
+// SPDX-License-Identifier: Apache-2.0
+
+package io.oswatcher;
 
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;

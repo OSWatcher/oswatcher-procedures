@@ -1,4 +1,7 @@
-package example;
+// Copyright 2021-2026 Mathieu Tarral
+// SPDX-License-Identifier: Apache-2.0
+
+package io.oswatcher;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,7 +40,7 @@ public class JoinTest {
             Session session = driver.session()) {
 
             // When
-            String result = session.run( "RETURN example.join(['Hello', 'World']) AS result").single().get("result").asString();
+            String result = session.run( "RETURN oswatcher.join(['Hello', 'World']) AS result").single().get("result").asString();
 
             // Then
             assertThat( result).isEqualTo(( "Hello,World" ));

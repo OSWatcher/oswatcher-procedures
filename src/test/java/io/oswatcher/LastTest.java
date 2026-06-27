@@ -1,4 +1,7 @@
-package example;
+// Copyright 2021-2026 Mathieu Tarral
+// SPDX-License-Identifier: Apache-2.0
+
+package io.oswatcher;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,7 +43,7 @@ public class LastTest {
             Session session = driver.session()) {
 
             // When
-            Long result = session.run( "UNWIND range(1,10) as value RETURN example.last(value) AS last").single().get("last").asLong();
+            Long result = session.run( "UNWIND range(1,10) as value RETURN oswatcher.last(value) AS last").single().get("last").asLong();
 
             // Then
             assertThat(result).isEqualTo( 10L );

@@ -1,4 +1,7 @@
-package example;
+// Copyright 2021-2026 Mathieu Tarral
+// SPDX-License-Identifier: Apache-2.0
+
+package io.oswatcher;
 
 import org.neo4j.procedure.*;
 
@@ -7,8 +10,8 @@ import org.neo4j.procedure.*;
  */
 public class Last {
 
-    @UserAggregationFunction("example.last")
-    @Description("example.last(value) - returns last non-null row")
+    @UserAggregationFunction("oswatcher.last")
+    @Description("oswatcher.last(value) - returns last non-null row")
     public LastFunction last() {
         return new LastFunction();
     }
